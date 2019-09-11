@@ -8,7 +8,7 @@ Keep track of your clock-in and clock-outs from work.
 ## Motivation
 Currently my work offers a terrible website to allow employees to check their
 clock-ins, clock-outs, worked hours and overtime done. The problem starts with
-the fact that it frequently incorrectly calculate worked hours. Besides that,
+the fact that it frequently incorrectly calculates worked hours. Besides that,
 the platform has zero flexibility for people who work on flexible schedules.
 
 That said, the idea here is to implement a simple to use, and initially very basic,
