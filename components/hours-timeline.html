@@ -1,41 +1,47 @@
 <template>
-    <style>
-        :host {
-            display: flex;
-            contain: content;
-        }
-    </style>
-    <div></div>
+  <style>
+    :host {
+      display: flex;
+      contain: content;
+    }
+  </style>
+  <div></div>
 </template>
 
 <script>
-  (() => {
+  ;(() => {
+    "use strict"
+
     // Save reference to element's template
-    const template = document.currentScript.previousElementSibling.content;
+    const template = document.currentScript.previousElementSibling
 
-    class HoursTimeline extends HTMLElement {
-      constructor () {
-        super()
+    // Element initialization
+    const init = () => {
+      window.ShadyCSS && ShadyCSS.prepareTemplate(template, "hours-timeline")
 
-        // Attach a shadow root to the element.
-        const shadowRoot = this.attachShadow({mode: 'open'})
-        shadowRoot.appendChild(template.cloneNode(true));
+      class HoursTimeline extends HTMLElement {
+        // Constructor can't be used reliable in polyfill'ed custom elements
+        connectedCallback() {
+          window.ShadyCSS && ShadyCSS.styleElement(this)
+          if (!this.shadowRoot) {
+            this.attachShadow({ mode: "open" })
+            this.shadowRoot.appendChild(document.importNode(template.content, true))
+          }
+        }
+
+        disconnectedCallback() {
+          // TODO: Element clean-up
+        }
+
+        attributeChangedCallback(attrName, oldVal, newVal) {}
       }
 
-      connectedCallback () {
-        // TODO: Element initialization
-      }
-
-      disconnectedCallback () {
-        // TODO: Element clean-up
-      }
-
-      attributeChangedCallback (attrName, oldVal, newVal) {
-      }
-
+      // Register custom element
+      customElements.define("hours-timeline", HoursTimeline)
     }
 
-    // Register custom element
-    customElements.define("hours-timeline", HoursTimeline)
+    // Add init to correct listener
+    ;(window.WebComponents && WebComponents.waitFor && (WebComponents.waitFor(init) || true)) ||
+      document.addEventListener("WebComponentsReady", init)
   })()
 </script>

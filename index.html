@@ -1,49 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Keep Track</title>
-        <meta name="description" content="Keep track of your clock-in and clock-outs from work">
+  <head>
+    <meta charset="utf-8" />
+    <title>Keep Track</title>
+    <meta name="description" content="Keep track of your clock-in and clock-outs from work" />
 
-        <!-- Allow web page to correctly scale in multi-dpi devices -->
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Allow web page to correctly scale in multi-dpi devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <!-- Scripts -->
-        <!-- HTML Imports polyfill.
+    <!-- Scripts -->
+    <!-- HTML Imports polyfill.
         Currently this feature is on deprecation route. However so long as HTML
         Modules aren't standardized and widely available this seems to be the best
         way to load WebComponents.
-        -->
-        <script src="node_modules/@webcomponents/html-imports/html-imports.min.js" async></script>
+    -->
+    <script src="node_modules/@webcomponents/html-imports/html-imports.min.js" async></script>
+    <!-- WebComponents polyfill.
+        WebComponents spec is not yet widely available even in evergreen browsers
+        WARNING: Must use defer, not async
+    -->
+    <script
+      src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"
+      defer
+    ></script>
 
-        <!-- WebComponents Imports -->
-        <link rel="import" href="components/hours-timeline.html">
+    <!-- WebComponents Imports -->
+    <link rel="import" href="components/hours-timeline.html" />
 
-        <!-- Styles -->
-        <!-- Sanitize CSS.
+    <!-- Styles -->
+    <!-- Sanitize CSS.
         Because no one needs to suffers with browser inconsistency.
-        -->
-        <link href="node_modules/sanitize.css/sanitize.css" rel="stylesheet"/>
-        <link href="node_modules/sanitize.css/forms.css" rel="stylesheet"/>
-        <link href="node_modules/sanitize.css/typography.css" rel="stylesheet"/>
-    </head>
-    <body>
-        <!-- Warn any Internet Explorer users that they should update their browser -->
-        <!--[if IE]>
-        <meta http-equiv="refresh" content="10;URL='https://browsehappy.com/'" />
-        <p>Internet Explorer is not supported, you will be redirected in 10 seconds...</p>
-        <style> main { display: none !important; } </style>
-        <![endif]-->
+    -->
+    <link href="node_modules/sanitize.css/sanitize.css" rel="stylesheet" />
+    <link href="node_modules/sanitize.css/forms.css" rel="stylesheet" />
+    <link href="node_modules/sanitize.css/typography.css" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Warn any Internet Explorer users that they should update their browser -->
+    <!--[if IE]>
+      <meta http-equiv="refresh" content="10;URL='https://browsehappy.com/'" />
+      <p>Internet Explorer is not supported, you will be redirected in 10 seconds...</p>
+      <style>
+        main {
+          display: none !important;
+        }
+      </style>
+    <![endif]-->
 
-        <!-- Warn any user without javascript that they should enable it to use this web page -->
-        <noscript>
-            <meta http-equiv="refresh" content="10;URL='https://www.enable-javascript.com/'" />
-            <p>This website requires javascript to work, you will be redirected in 10 seconds...</p>
-            <style> main { display: none !important; } </style>
-        </noscript>
+    <!-- Warn any user without javascript that they should enable it to use this web page -->
+    <noscript>
+      <meta http-equiv="refresh" content="10;URL='https://www.enable-javascript.com/'" />
+      <p>This website requires javascript to work, you will be redirected in 10 seconds...</p>
+      <style>
+        main {
+          display: none !important;
+        }
+      </style>
+    </noscript>
 
-        <main>
-            <hours-timeline></hours-timeline>
-        </main>
-    </body>
+    <main>
+      <hours-timeline></hours-timeline>
+    </main>
+  </body>
 </html>
