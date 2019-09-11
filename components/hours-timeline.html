@@ -1,0 +1,41 @@
+<template>
+    <style>
+        :host {
+            display: flex;
+            contain: content;
+        }
+    </style>
+    <div></div>
+</template>
+
+<script>
+  (() => {
+    // Save reference to element's template
+    const template = document.currentScript.previousElementSibling.content;
+
+    class HoursTimeline extends HTMLElement {
+      constructor () {
+        super()
+
+        // Attach a shadow root to the element.
+        const shadowRoot = this.attachShadow({mode: 'open'})
+        shadowRoot.appendChild(template.cloneNode(true));
+      }
+
+      connectedCallback () {
+        // TODO: Element initialization
+      }
+
+      disconnectedCallback () {
+        // TODO: Element clean-up
+      }
+
+      attributeChangedCallback (attrName, oldVal, newVal) {
+      }
+
+    }
+
+    // Register custom element
+    customElements.define("hours-timeline", HoursTimeline)
+  })()
+</script>

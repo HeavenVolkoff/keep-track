@@ -1,0 +1,26 @@
+{
+  "name": "keep-track",
+  "version": "0.0.1",
+  "description": "Keep track of your clock-in and clock-outs from work",
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HeavenVolkoff/keep-track"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "keep",
+    "track",
+    "time",
+    "work",
+    "clock-in"
+  ],
+  "author": "HeavenVolkoff",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "@webcomponents/html-imports": "^1.2.1",
+    "sanitize.css": "^11.0.0"
+  }
+}
