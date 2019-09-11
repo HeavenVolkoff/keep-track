@@ -6,22 +6,21 @@
 Keep track of your clock-in and clock-outs from work.
 
 ## Motivation
-Currently my work offers a very bad website to allow employees to check they
-clock-ins, clock-outs, hours worked and overtime. It constantly calculate
-hours incorrectly, besides having zero flexibility for people that work on
-differently schedules.
+Currently my work offers a terrible website to allow employees to check their
+clock-ins, clock-outs, worked hours and overtime done. The problem starts with
+the fact that it frequently incorrectly calculate worked hours. Besides that,
+the platform has zero flexibility for people who work on flexible schedules.
 
-So the idea here is to implement a simple to use, and initially very basic, web
-page that calculates how many hours you worked in a day, and presents this
-information, alongside you arrival and departure time from work, in a clean
-manner.
+That said, the idea here is to implement a simple to use, and initially very basic,
+web page that calculates how many hours you worked in a day and present it, alongside
+arrival and departure times from work, in a clean manner.
 
 Also I wanted to learn WebComponents.
 
 ## Planned features
-+ Add arrival and departure hour for the day
-+ Calculate worked hours
-+ Display this information in a clean timeline
-+ Multiple days
-+ Add input for rest hours
-+ Add custom value multiplier to hour in certain ranges 
+- [ ] Add arrival and departure hour for the day
+- [ ] Calculate worked hours
+- [ ] Display this information in a clean timeline
+- [ ] Multiple days
+- [ ] Add input for rest hours
+- [ ] Add custom value multiplier to hour in certain ranges 
