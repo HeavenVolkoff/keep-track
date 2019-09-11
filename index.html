@@ -30,30 +30,16 @@
     <body>
         <!-- Warn any Internet Explorer users that they should update their browser -->
         <!--[if IE]>
-        <style>
-            html, body, iframe.browserhappy {
-                width: 100%;
-                height: 100%;
-            }
-        </style>
-        <iframe class="browserhappy"
-                src="https://browsehappy.com/"
-                style="z-index: 99999"
-        ></iframe>
+        <meta http-equiv="refresh" content="10;URL='https://browsehappy.com/'" />
+        <p>Internet Explorer is not supported, you will be redirected in 10 seconds...</p>
+        <style> main { display: none !important; } </style>
         <![endif]-->
 
         <!-- Warn any user without javascript that they should enable it to use this web page -->
         <noscript>
-            <style>
-                html, body, iframe.enable-javascript {
-                    width: 100%;
-                    height: 100%;
-                }
-            </style>
-            <iframe class="enable-javascript"
-                    src="https://www.enable-javascript.com"
-                    style="z-index: 99999"
-            ></iframe>
+            <meta http-equiv="refresh" content="10;URL='https://www.enable-javascript.com/'" />
+            <p>This website requires javascript to work, you will be redirected in 10 seconds...</p>
+            <style> main { display: none !important; } </style>
         </noscript>
 
         <main>

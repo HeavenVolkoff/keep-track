@@ -18,9 +18,11 @@ arrival and departure times from work, in a clean manner.
 Also I wanted to learn WebComponents.
 
 ## Planned features
-- [ ] Add arrival and departure hour for the day
+- [ ] Add input for arrival and departure hour
 - [ ] Calculate worked hours
 - [ ] Display this information in a clean timeline
-- [ ] Multiple days
+- [ ] Implement multiple days
+- [ ] Implement local saving
 - [ ] Add input for rest hours
 - [ ] Add custom value multiplier to hour in certain ranges 
+- [ ] Implement ServiceWorker 
