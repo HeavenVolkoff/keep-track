@@ -1,5 +1,5 @@
 import register from '../helpers/register.js'
-import { positiveInteger } from '../helpers/validators.js'
+import { validHour } from '../helpers/validators.js'
 import { processAttributes, setAttributesDefault } from '../helpers/process_attributes.js'
 
 class HoursTimeline extends window.HTMLElement {
@@ -16,7 +16,7 @@ class HoursTimeline extends window.HTMLElement {
 
   static get attributesModifier () {
     // List of modifier functions for attributes values
-    return { 'hour-begin': positiveInteger, 'hour-end': positiveInteger }
+    return { 'hour-begin': validHour, 'hour-end': validHour }
   }
 
   static get attributesDefault () {

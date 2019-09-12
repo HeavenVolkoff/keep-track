@@ -1,4 +1,4 @@
-export default (impl) => {
+export default impl => {
   const WebComponents = window.WebComponents || {}
 
   const name = impl.templateName
