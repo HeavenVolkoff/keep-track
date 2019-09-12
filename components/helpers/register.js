@@ -1,38 +1,36 @@
-;(window => {
-  'use strict'
+export default (impl) => {
+  const WebComponents = window.WebComponents || {}
 
-  // Reference to current script element
-  const currentScript = document.currentScript
-
-  // Load data passed to script element about the custom element to be registered
-  const elementName = currentScript.dataset.elementName
-  const elementImpl = window.WebComponents.registry[elementName]
-  const elementExtends = currentScript.dataset.elementExtends
-    ? { extends: currentScript.dataset.elementExtends }
-    : {}
+  const name = impl.templateName
+  const native = impl.nativeExtends
+  const template = WebComponents.templates[name]
 
   // Some basic validation
-  if (typeof elementImpl !== 'function') {
-    throw Error(`Implementation for element ${elementName} is not available in window`)
-  } else if (!elementImpl.template || elementImpl.template.tagName !== 'TEMPLATE') {
-    throw Error(
-      `Implementation for element ${elementName} doesn't contain a reference to a template element`
-    )
+  if (!name || typeof name !== 'string') {
+    throw Error('Invalid name for custom element')
+  } else if (native && typeof native !== 'string') {
+    throw Error(`Invalid native extension for custom element: ${name}`)
+  } else if (typeof impl !== 'function') {
+    throw Error(`Invalid implementation for custom element: ${name}`)
+  } else if (!template || template.tagName !== 'TEMPLATE') {
+    throw Error(`Invalid template for custom element: ${name}`)
   }
+
+  const _extends = native ? { extends: native } : {}
 
   // Element initialization
   const init = () => {
     // ShadyCSS must be initialized before with the template and custom element
-    window.ShadyCSS &&
-      window.ShadyCSS.prepareTemplate(elementImpl.template, elementName, elementExtends.extends)
+    window.ShadyCSS && window.ShadyCSS.prepareTemplate(template, name, _extends.extends)
 
     // Register custom element
-    window.customElements.define('hours-timeline', elementImpl, elementExtends)
+    window.customElements.define('hours-timeline', impl, _extends)
   }
 
   // Add init to correct listener
-  ;(window.WebComponents &&
-    window.WebComponents.waitFor &&
-    (window.WebComponents.waitFor(init) || true)) ||
+  if (WebComponents.waitFor) {
+    WebComponents.waitFor(init)
+  } else {
     document.addEventListener('WebComponentsReady', init)
-})(typeof window !== 'undefined' ? window : this)
+  }
+}

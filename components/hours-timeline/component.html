@@ -1,0 +1,30 @@
+<template>
+  <style>
+    :host {
+      display: flex;
+      contain: content;
+      min-width: 4rem;
+      min-height: 1.5rem;
+      background: dimgrey;
+    }
+
+    .date {
+      padding: 1rem;
+    }
+
+    .timeline > hr {
+      width: 0.2rem;
+      height: 100%;
+      min-width: 2px;
+    }
+  </style>
+
+  <div class="date">??/??</div>
+  <div class="timeline"></div>
+</template>
+
+<script>
+  window.WebComponents.templates['hours-timeline'] = document.currentScript.previousElementSibling
+</script>
+
+<script type="module" async src="component.js"></script>

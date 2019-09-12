@@ -8,13 +8,10 @@
     <!-- Allow web page to correctly scale in multi-dpi devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Preloading -->
-    <link rel="preload" href="components/helpers/register.js" as="script">
-
     <!-- Scripts -->
     <!-- Create custom components global registry -->
     <script>
-      window.WebComponents = { registry: {} }
+      window.WebComponents = { templates: {} }
     </script>
     <!-- HTML Imports polyfill.
         Currently this feature is on deprecation route. However so long as HTML
@@ -32,7 +29,7 @@
     ></script>
 
     <!-- WebComponents Imports -->
-    <link rel="import" href="components/hours-timeline.html" />
+    <link rel="import" href="components/hours-timeline/component.html" />
 
     <!-- Styles -->
     <!-- Sanitize CSS.
