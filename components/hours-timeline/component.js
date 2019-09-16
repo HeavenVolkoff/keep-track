@@ -1,8 +1,8 @@
 import register from '../helpers/register.js'
 import { validHour } from '../helpers/validators.js'
-import { processAttributes, setAttributesDefault } from '../helpers/process_attributes.js'
+import componentBehaviourMixin from '../mixins/component-behaviour.js'
 
-class HoursTimeline extends window.HTMLElement {
+class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
 
   static get templateName () {
@@ -11,65 +11,41 @@ class HoursTimeline extends window.HTMLElement {
 
   static get observedAttributes () {
     // Whitelist of attributes for browser to fire `attributeChangedCallback` when changed
-    return ['hour-begin', 'hour-end']
+    return ['data-hour-begin', 'data-hour-end']
   }
 
   static get attributesModifier () {
     // List of modifier functions for attributes values
-    return { 'hour-begin': validHour, 'hour-end': validHour }
+    return { 'data-hour-begin': validHour, 'data-hour-end': validHour }
   }
 
   static get attributesDefault () {
     // List of default values for attributes
-    return { 'hour-begin': 9, 'hour-end': 17 }
+    return { 'data-hour-begin': '9', 'data-hour-end': '17' }
   }
 
-  initShadow () {
-    // Attach shadow DOM to element
-    this.attachShadow({ mode: 'open' })
-    // Load template content into element shadow DOM
-    this.shadowRoot.appendChild(
-      document.importNode(
-        window.WebComponents.templates[this.constructor.templateName].content,
-        true
-      )
-    )
-
-    // Initialize properties
-    this.hourEnd = 0
-    this.hourBegin = 0
-
-    setAttributesDefault(this, this.constructor.attributesDefault)
+  init () {
+    // Add event callbacks
+    this.addEventListener('wheel', event => {
+      event.preventDefault()
+      this.dataset.hourBegin -= event.deltaY / Math.abs(event.deltaY)
+      this.dataset.hourEnd += event.deltaY / Math.abs(event.deltaY)
+    })
   }
 
   render () {
-    const hourRange = this.hourEnd - this.hourBegin
-    if (hourRange > 0) {
-      const range = document.createRange()
-      range.selectNodeContents(this.shadowRoot.querySelector('.timeline'))
-      const timelineFragment = document.createDocumentFragment()
-      for (const i of Array(hourRange).keys()) {
-        timelineFragment.appendChild(document.createElement('hr'))
-      }
-      range.deleteContents()
-      range.insertNode(timelineFragment)
+    const hourRange = this.dataset.hourEnd - this.dataset.hourBegin
+
+    if (hourRange <= 0) throw new Error('Hour range must be at leat 1')
+
+    const range = document.createRange()
+    range.selectNodeContents(this.shadowRoot.querySelector('.timeline'))
+    const timelineFragment = document.createDocumentFragment()
+    for (const i of Array(hourRange).keys()) {
+      timelineFragment.appendChild(document.createElement('hr'))
     }
-  }
-
-  connectedCallback () {
-    // ShadyCSS need to be called for every custom element when it is connected
-    window.ShadyCSS && window.ShadyCSS.styleElement(this)
-    if (!this.shadowRoot) this.initShadow()
-  }
-
-  disconnectedCallback () {
-    // TODO: Element clean-up
-  }
-
-  attributeChangedCallback (attrName, oldVal, newVal) {
-    if (processAttributes(this, this.constructor.attributesModifier, attrName, oldVal, newVal)) {
-      this.render()
-    }
+    range.deleteContents()
+    range.insertNode(timelineFragment)
   }
 }
 
