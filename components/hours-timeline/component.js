@@ -1,6 +1,6 @@
 import register from '../helpers/register.js'
 import { validHour } from '../helpers/validators.js'
-import componentBehaviourMixin from '../mixins/component-behaviour.js'
+import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
 
 class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
@@ -11,17 +11,25 @@ class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
 
   static get observedAttributes () {
     // Whitelist of attributes for browser to fire `attributeChangedCallback` when changed
-    return ['data-hour-begin', 'data-hour-end']
+    return ['data-date', 'data-hour-begin', 'data-hour-end']
   }
 
   static get attributesModifier () {
     // List of modifier functions for attributes values
-    return { 'data-hour-begin': validHour, 'data-hour-end': validHour }
+    return {
+      'data-date': str => new Date(str),
+      'data-hour-begin': validHour,
+      'data-hour-end': validHour
+    }
   }
 
   static get attributesDefault () {
     // List of default values for attributes
-    return { 'data-hour-begin': '9', 'data-hour-end': '17' }
+    return {
+      'data-date': new Date(Date.now()).toDateString(),
+      'data-hour-begin': '9',
+      'data-hour-end': '17'
+    }
   }
 
   init () {
@@ -31,21 +39,23 @@ class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
       this.dataset.hourBegin -= event.deltaY / Math.abs(event.deltaY)
       this.dataset.hourEnd += event.deltaY / Math.abs(event.deltaY)
     })
+
+    this.addEventListener('error', event => console.error(event.error))
   }
 
   render () {
+    // Insert date text
+    this.shadowRoot.querySelector('.date').textContent = this.dataset.date.toLocaleDateString()
+
+    // Construct hour range
     const hourRange = this.dataset.hourEnd - this.dataset.hourBegin
 
     if (hourRange <= 0) throw new Error('Hour range must be at leat 1')
 
-    const range = document.createRange()
-    range.selectNodeContents(this.shadowRoot.querySelector('.timeline'))
-    const timelineFragment = document.createDocumentFragment()
+    const timeline = this.shadowRoot.querySelector('.timeline')
     for (const i of Array(hourRange).keys()) {
-      timelineFragment.appendChild(document.createElement('hr'))
+      timeline.appendChild(document.createElement('hr'))
     }
-    range.deleteContents()
-    range.insertNode(timelineFragment)
   }
 }
 

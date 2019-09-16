@@ -1,4 +1,4 @@
-import { hasOwnProperty, nameToDataAttribute } from '../helpers/misc.js'
+import { hasOwnProperty, nameToDataAttribute } from '../misc.js'
 
 const proxiedDataset = Symbol('ProxiedDataset')
 
@@ -24,6 +24,14 @@ const proxiedDataset = Symbol('ProxiedDataset')
  * @function
  * @name ComponentBehaviour#init
  * @abstract
+ * @returns {undefined}
+ **/
+
+/**
+ * Component reset
+ *
+ * @function
+ * @name ComponentBehaviour#reset
  * @returns {undefined}
  **/
 
@@ -119,6 +127,7 @@ export default ElementClass => {
             if (rawValue == null) return null
 
             if (hasOwnProperty(this.constructor.attributesModifier, dataAttr)) {
+              // TODO: Cache this value
               return this.constructor.attributesModifier[dataAttr](rawValue)
             }
 
@@ -137,12 +146,26 @@ export default ElementClass => {
     init () {}
 
     /**
+     * Component reset
+     */
+    reset () {
+      const range = document.createRange()
+      range.selectNodeContents(this.shadowRoot)
+      range.deleteContents()
+
+      this.shadowRoot.appendChild(
+        document.importNode(
+          window.WebComponents.templates[this.constructor.templateName].content,
+          true
+        )
+      )
+    }
+
+    /**
      * Component rendering
      * @abstract
      */
     render () {}
-
-    // TODO: Implement a reset
 
     /**
      * Component finalization
@@ -170,17 +193,16 @@ export default ElementClass => {
           if (this.getAttribute(key) === null) this.setAttribute(key, value)
         }
 
-        // TODO: Validate element's initial state
+        // TODO: maybe a custom init event?
       }
     }
 
     disconnectedCallback () {
+      this.reset()
       this.finalize()
     }
 
     attributeChangedCallback (attrName, oldVal, newVal) {
-      let rollback = false
-
       if (!hasOwnProperty(this.attributeChangedCallback, '_roll_back')) {
         this.attributeChangedCallback._roll_back = new Set()
       }
@@ -197,20 +219,25 @@ export default ElementClass => {
       // Don't process repeated values
       if (oldVal === newVal) return
 
+      let doingRollback = false
+      const rollback = this.attributeChangedCallback._roll_back
+
       try {
-        // TODO: Call reset
+        this.reset()
         this.render()
       } catch (error) {
-        console.error(error)
-        if (this.attributeChangedCallback._roll_back.has(attrName)) {
+        this.dispatchEvent(
+          new window.ErrorEvent('error', { message: 'Failed to render element', error })
+        )
+        if (rollback.has(attrName)) {
           throw Error('Failed to restore state')
         } else {
-          rollback = true
-          this.attributeChangedCallback._roll_back.add(attrName)
+          doingRollback = true
+          rollback.add(attrName)
           this.setAttribute(attrName, oldVal)
         }
       } finally {
-        if (!rollback) this.attributeChangedCallback._roll_back.delete(attrName)
+        if (!doingRollback) rollback.delete(attrName)
       }
     }
   }
