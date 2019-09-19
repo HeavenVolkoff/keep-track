@@ -2,23 +2,50 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+
+    <!-- Specify IE rendering engine -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
     <title>Keep Track</title>
-    <meta name="description" content="Keep track of your clock-in and clock-outs from work" />
 
     <!-- Allow web page to correctly scale in multi-dpi devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Website description -->
+    <meta name="description" content="Keep track of your clock-in and clock-outs from work" />
+
+    <!-- Color the status bar on mobile devices -->
+    <meta name="theme-color" content="#ffffff" />
+
+    <!-- Disable tap highlight on IE -->
+    <meta name="msapplication-tap-highlight" content="no" />
+
     <!-- Scripts -->
-    <!-- Create custom components global registry -->
+    <!-- Create custom components's template global registry -->
     <script>
-      window.WebComponents = { templates: {} }
+      window.WebComponents = window.WebComponents || {}
+      window.WebComponents.templates = {}
     </script>
+    <!-- Poor-man old browser detection.
+        Works for: IE < 11, FF < 43, Chrome < 49, Opera < 36, Safari < 10, Android Webview <= KitKat
+    -->
+    <!-- prettier-ignore -->
+    <script>try{let _}catch(_){document.body.innerHTML="<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>";setTimeout(function(){window.location.href="https://browsehappy.com/"},1E4)}</script>
+    <!-- Safari 10.1/iOS Safari 10.3 nomodule polyfill
+        from: https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
+    -->
+    <!-- prettier-ignore -->
+    <script>(function(){const a=document.createElement("script");if(!("noModule"in a)&&"onbeforeload"in a){let c=!1;document.addEventListener("beforeload",function(b){if(b.target===a)c=!0;else if(!b.target.hasAttribute("nomodule")||!c)return;b.preventDefault()},!0);a.type="module";a.src=".";document.head.appendChild(a);a.remove()}})()</script>
     <!-- HTML Imports polyfill.
         Currently this feature is on deprecation route. However so long as HTML
         Modules aren't standardized and widely available this seems to be the best
         way to load WebComponents.
     -->
     <script src="node_modules/@webcomponents/html-imports/html-imports.min.js" async></script>
+    <!-- SystemJS, ES module polyfill.
+        Only loaded in browsers that don't support ES modules thanks to nomodule.
+    -->
+    <script src="node_modules/systemjs/dist/s.min.js" nomodule async></script>
     <!-- WebComponents polyfill.
         WebComponents spec is not yet widely available even in evergreen browsers
         WARNING: Must use defer, not async
@@ -27,6 +54,10 @@
       src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"
       defer
     ></script>
+    <!-- Basic features polyfills.
+        Must be synchronous to ensure all future code have access to this features
+    -->
+    <script src="https://polyfill.io/v3/polyfill.js?features=es2015%2Ces2016%2Ces2017%2Ces2018%2Ces5%2Ces6%2Ces7%2CURL"></script>
 
     <!-- WebComponents Imports -->
     <link rel="import" href="components/hours-timeline/component.html" />
@@ -40,17 +71,6 @@
     <link rel="stylesheet" href="node_modules/sanitize.css/typography.css" />
   </head>
   <body>
-    <!-- Warn any Internet Explorer users that they should update their browser -->
-    <!--[if IE]>
-      <meta http-equiv="refresh" content="10;URL='https://browsehappy.com/'" />
-      <p>Internet Explorer is not supported, you will be redirected in 10 seconds...</p>
-      <style>
-        main {
-          display: none !important;
-        }
-      </style>
-    <![endif]-->
-
     <!-- Warn any user without javascript that they should enable it to use this web page -->
     <noscript>
       <meta http-equiv="refresh" content="10;URL='https://www.enable-javascript.com/'" />

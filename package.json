@@ -22,14 +22,21 @@
   "dependencies": {
     "@webcomponents/html-imports": "^1",
     "@webcomponents/webcomponentsjs": "^2",
-    "js-isort": "^2.0.4",
-    "sanitize.css": "^11"
+    "pepjs": "^0.5.2",
+    "sanitize.css": "^11",
+    "systemjs": "^6.1.1"
   },
   "devDependencies": {
     "eslint-plugin-html": "^6.0.0",
     "eslint-plugin-markdown": "^1.0.0",
+    "fast-glob": "^3.0.4",
+    "js-isort": "^2.0.4",
+    "license-checker": "^25.0.1",
     "prettier": "^1.18.2",
-    "standard": "^14.1.0"
+    "rollup": "^1.21.4",
+    "rollup-plugin-copy": "^3.1.0",
+    "rollup-plugin-terser": "^5.1.2",
+    "standard": "^14.3.1"
   },
   "prettier": {
     "semi": false,

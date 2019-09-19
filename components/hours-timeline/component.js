@@ -1,6 +1,6 @@
+import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
 import register from '../helpers/register.js'
 import { validHour } from '../helpers/validators.js'
-import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
 
 class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
@@ -57,6 +57,8 @@ class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
       timeline.appendChild(document.createElement('hr'))
     }
   }
+
+  finalize () {}
 }
 
 register(HoursTimeline)

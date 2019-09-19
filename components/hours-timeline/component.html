@@ -4,18 +4,26 @@
       display: flex;
       contain: content;
       min-width: 4rem;
-      min-height: 1.5rem;
+      min-height: 6rem;
       background: dimgrey;
+      align-content: center;
+      justify-content: center;
     }
 
     .date {
       padding: 1rem;
+      display: flex;
+      align-content: center;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .timeline {
       flex: auto;
       display: flex;
-      justify-content: space-around;
+      align-content: center;
+      flex-direction: row;
+      justify-content: space-between;
     }
 
     .timeline > hr {
@@ -24,6 +32,12 @@
       padding: 0;
       border: none;
       border-left: 2px dotted black;
+    }
+
+    @media screen and (pointer: fine) {
+      :host {
+        min-height: 3rem;
+      }
     }
   </style>
 
@@ -36,3 +50,4 @@
 </script>
 
 <script type="module" async src="component.js"></script>
+<script type="systemjs-module" src="component-system.js"></script>
