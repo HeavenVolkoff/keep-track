@@ -12,7 +12,7 @@ export default impl => {
     throw Error(`Invalid native extension for custom element: ${name}`)
   } else if (typeof impl !== 'function') {
     throw Error(`Invalid implementation for custom element: ${name}`)
-  } else if (!template || template.tagName !== 'TEMPLATE') {
+  } else if (!template || `${template.tagName}`.toLowerCase() !== 'template') {
     throw Error(`Invalid template for custom element: ${name}`)
   }
 
@@ -24,7 +24,7 @@ export default impl => {
     window.ShadyCSS && window.ShadyCSS.prepareTemplate(template, name, _extends.extends)
 
     // Register custom element
-    window.customElements.define('hours-timeline', impl, _extends)
+    window.customElements.define(name, impl, _extends)
   }
 
   // Add init to correct listener

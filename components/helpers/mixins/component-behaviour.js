@@ -1,6 +1,22 @@
-import { hasOwnProperty, nameToDataAttribute } from '../misc.js'
+import { attributeNameToCamelCase, hasOwnProperty } from '../misc.js'
 
-const proxiedDataset = Symbol('ProxiedDataset')
+const repaintQueue = new Map()
+const datasetSymbol = Symbol('Custom element\'s dataset')
+const rollbackSymbol = Symbol('Custom element\'s attribute rollback control')
+const initializedAttrs = Symbol('Custom element\'s attributes default initialization flag')
+const updateCustomElements = _ => {
+  if (repaintQueue.size > 0) {
+    for (const [element, documentFragment] of repaintQueue) {
+      element.reset(documentFragment)
+    }
+    repaintQueue.clear()
+  }
+
+  window.requestAnimationFrame(updateCustomElements)
+}
+
+// Start loop for updating custom elements
+window.requestAnimationFrame(updateCustomElements)
 
 /**
  * Callback for attribute modifiers.
@@ -32,6 +48,7 @@ const proxiedDataset = Symbol('ProxiedDataset')
  *
  * @function
  * @name ComponentBehaviour#reset
+ * @param {DocumentFragment|null} documentFragment
  * @returns {undefined}
  **/
 
@@ -41,7 +58,8 @@ const proxiedDataset = Symbol('ProxiedDataset')
  * @function
  * @name ComponentBehaviour#render
  * @abstract
- * @returns {undefined}
+ * @param {DocumentFragment} documentFragment
+ * @returns {boolean|undefined}
  **/
 
 /**
@@ -115,61 +133,82 @@ export default ElementClass => {
     }
 
     /**
-     * @ignore
+     *  Create an object to proxy the HTMLElement's dataset.
+     *  All attributes defined in `observedAttributes` will be defined as getters, their values
+     *    will be automatically parsed with the functions in `attributesModifier`.
+     *  Extra attributes will not be exposed here, but can be accessed in they raw form with
+     *    `super.dataset`.
      */
     get dataset () {
-      if (typeof this[proxiedDataset] === 'undefined') {
-        this[proxiedDataset] = new Proxy(super.dataset, {
-          get: (target, prop) => {
-            const dataAttr = nameToDataAttribute(prop)
-            const rawValue = target[prop]
-
-            if (rawValue == null) return null
-
-            if (hasOwnProperty(this.constructor.attributesModifier, dataAttr)) {
-              // TODO: Cache this value
-              return this.constructor.attributesModifier[dataAttr](rawValue)
-            }
-
-            return rawValue
-          }
-        })
+      // Instantiate dataset if it isn't available yet
+      if (this[datasetSymbol] == null) {
+        this[datasetSymbol] = Object.create(
+          null,
+          Object.fromEntries(
+            this.constructor.observedAttributes
+              .filter(attrName => attrName.startsWith('data-'))
+              .map(attrName => {
+                // Dataset uses a different naming scheme to access the attribute values:
+                // data-attr-name => dataset.attrName
+                const dataAttrName = attributeNameToCamelCase(attrName)
+                return [
+                  dataAttrName,
+                  {
+                    set: val => (super.dataset[dataAttrName] = val),
+                    get: () => {
+                      const rawValue = super.dataset[dataAttrName]
+                      const modifier = this.constructor.attributesModifier[attrName]
+                      // TODO: Cache modifier result
+                      return modifier == null ? rawValue : modifier(rawValue)
+                    },
+                    enumerable: true,
+                    configurable: false
+                  }
+                ]
+              })
+          )
+        )
       }
 
-      return this[proxiedDataset]
+      return this[datasetSymbol]
     }
 
     /**
      * Component initialization
      * @abstract
+     * @returns {undefined}
      */
     init () {}
 
     /**
      * Component reset
+     * @param {DocumentFragment|null} documentFragment
+     * @returns {undefined}
      */
-    reset () {
+    reset (documentFragment) {
+      if (!this.shadowRoot) return
+
       const range = document.createRange()
       range.selectNodeContents(this.shadowRoot)
       range.deleteContents()
 
-      this.shadowRoot.appendChild(
-        document.importNode(
-          window.WebComponents.templates[this.constructor.templateName].content,
-          true
-        )
-      )
+      if (documentFragment != null) {
+        range.insertNode(documentFragment)
+      }
     }
 
     /**
      * Component rendering
      * @abstract
+     * @param {DocumentFragment} documentFragment
+     * @returns {boolean|undefined}
      */
-    render () {}
+    render (documentFragment) {}
 
     /**
      * Component finalization
      * @abstract
+     * @returns {undefined}
      */
     finalize () {}
 
@@ -179,66 +218,69 @@ export default ElementClass => {
       if (!this.shadowRoot && this.isConnected) {
         // Attach shadow DOM to element
         this.attachShadow({ mode: 'open' })
-        // Load template content into element shadow DOM
-        this.shadowRoot.appendChild(
-          document.importNode(
-            window.WebComponents.templates[this.constructor.templateName].content,
-            true
-          )
-        )
 
         this.init()
 
+        this[initializedAttrs] = () =>
+          Object.keys(this.constructor.attributesDefault).every(attr =>
+            hasOwnProperty(this.attributes, attr)
+          )
         for (const [key, value] of Object.entries(this.constructor.attributesDefault)) {
           if (this.getAttribute(key) === null) this.setAttribute(key, value)
         }
-
-        // TODO: maybe a custom init event?
+        this[initializedAttrs] = () => true
       }
     }
 
     disconnectedCallback () {
-      this.reset()
+      this.reset(null)
+      this.attachShadow({ mode: 'closed' })
+      this[initializedAttrs] = () => false
       this.finalize()
     }
 
     attributeChangedCallback (attrName, oldVal, newVal) {
-      if (!hasOwnProperty(this.attributeChangedCallback, '_roll_back')) {
-        this.attributeChangedCallback._roll_back = new Set()
-      }
-
-      if (
-        !Object.keys(this.constructor.attributesDefault).every(attr =>
-          hasOwnProperty(this.attributes, attr)
-        )
-      ) {
-        // Await until element has initialized all attributes
-        return
-      }
-
       // Don't process repeated values
       if (oldVal === newVal) return
+      // Wait until element has initialized all attributes
+      if (!this[initializedAttrs]()) return
+      // Initialize rollback control if necessary
+      if (!(this[rollbackSymbol] instanceof Set)) this[rollbackSymbol] = new Set()
 
-      let doingRollback = false
-      const rollback = this.attributeChangedCallback._roll_back
+      let shouldUpdate = true
+      const rollback = this[rollbackSymbol]
+      const fragment = document.createDocumentFragment()
+
+      // Initialize fragment with fresh content from element's template
+      fragment.appendChild(
+        document.importNode(
+          window.WebComponents.templates[this.constructor.templateName].content,
+          true
+        )
+      )
 
       try {
-        this.reset()
-        this.render()
+        shouldUpdate = this.render(fragment)
       } catch (error) {
         this.dispatchEvent(
           new window.ErrorEvent('error', { message: 'Failed to render element', error })
         )
         if (rollback.has(attrName)) {
-          throw Error('Failed to restore state')
+          // We couldn't revert the element back to it's old state.
+          // As a result the element's internal data will probably be discrepant with it's visual representation
+          throw Error('Failed to restore old state of custom element')
         } else {
-          doingRollback = true
           rollback.add(attrName)
+          // This change is synchronous and results in a recursive call to `attributeChangedCallback`
           this.setAttribute(attrName, oldVal)
+          return
         }
       } finally {
-        if (!doingRollback) rollback.delete(attrName)
+        rollback.delete(attrName)
       }
+
+      // Add rendered fragment to repaint queue
+      if (typeof shouldUpdate === 'undefined' || shouldUpdate) repaintQueue.set(this, fragment)
     }
   }
 }

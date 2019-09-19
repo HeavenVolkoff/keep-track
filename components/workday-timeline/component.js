@@ -2,11 +2,11 @@ import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
 import register from '../helpers/register.js'
 import { validHour } from '../helpers/validators.js'
 
-class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
+class WorkdayTimeline extends componentBehaviourMixin(window.HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
 
   static get templateName () {
-    return 'hours-timeline'
+    return 'workday-timeline'
   }
 
   static get observedAttributes () {
@@ -43,17 +43,17 @@ class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
     this.addEventListener('error', event => console.error(event.error))
   }
 
-  render () {
+  render (documentFragment) {
     // Insert date text
-    this.shadowRoot.querySelector('.date').textContent = this.dataset.date.toLocaleDateString()
+    documentFragment.querySelector('.date').textContent = this.dataset.date.toLocaleDateString()
 
     // Construct hour range
     const hourRange = this.dataset.hourEnd - this.dataset.hourBegin
 
-    if (hourRange <= 0) throw new Error('Hour range must be at leat 1')
+    if (hourRange < 2) throw new Error('Hour range must be at least 2')
 
-    const timeline = this.shadowRoot.querySelector('.timeline')
-    for (const i of Array(hourRange).keys()) {
+    const timeline = documentFragment.querySelector('.timeline')
+    for (const i of Array(hourRange + 1).keys()) {
       timeline.appendChild(document.createElement('hr'))
     }
   }
@@ -61,4 +61,4 @@ class HoursTimeline extends componentBehaviourMixin(window.HTMLElement) {
   finalize () {}
 }
 
-register(HoursTimeline)
+register(WorkdayTimeline)
