@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-jsdoc": "^15.9.2",
     "eslint-plugin-markdown": "^1.0.0",
     "fast-glob": "^3.0.4",
     "js-isort": "^2.0.4",
@@ -36,7 +37,22 @@
     "rollup": "^1.21.4",
     "rollup-plugin-copy": "^3.1.0",
     "rollup-plugin-terser": "^5.1.2",
-    "standard": "^14.3.1"
+    "standardx": "^5.0.0"
+  },
+  "standardx": {
+    "env": {
+      "browser": true
+    },
+    "plugins": [
+      "html",
+      "jsdoc",
+      "markdown"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:jsdoc/recommended"
+    ]
   },
   "prettier": {
     "semi": false,

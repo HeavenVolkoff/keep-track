@@ -1,9 +1,9 @@
 import { attributeNameToCamelCase, hasOwnProperty } from '../misc.js'
 
 const repaintQueue = new Map()
-const datasetSymbol = Symbol('Custom element\'s dataset')
-const rollbackSymbol = Symbol('Custom element\'s attribute rollback control')
-const initializedAttrs = Symbol('Custom element\'s attributes default initialization flag')
+const datasetSymbol = Symbol("Custom element's dataset")
+const rollbackSymbol = Symbol("Custom element's attribute rollback control")
+const initializedAttrs = Symbol("Custom element's attributes default initialization flag")
 const updateCustomElements = _ => {
   if (repaintQueue.size > 0) {
     for (const [element, documentFragment] of repaintQueue) {
@@ -30,15 +30,15 @@ window.requestAnimationFrame(updateCustomElements)
 /**
  * Interface for custom component behaviour mixin.
  *
- * @interface ComponentBehaviour
- * @extends {HTMLElement}
+ * @interface ComponentBehaviourInterface
+ * @augments {HTMLElement}
  **/
 
 /**
  * Component initialization
  *
  * @function
- * @name ComponentBehaviour#init
+ * @name ComponentBehaviourInterface#init
  * @abstract
  * @returns {undefined}
  **/
@@ -47,7 +47,7 @@ window.requestAnimationFrame(updateCustomElements)
  * Component reset
  *
  * @function
- * @name ComponentBehaviour#reset
+ * @name ComponentBehaviourInterface#reset
  * @param {DocumentFragment|null} documentFragment
  * @returns {undefined}
  **/
@@ -56,7 +56,7 @@ window.requestAnimationFrame(updateCustomElements)
  * Component rendering
  *
  * @function
- * @name ComponentBehaviour#render
+ * @name ComponentBehaviourInterface#render
  * @abstract
  * @param {DocumentFragment} documentFragment
  * @returns {boolean|undefined}
@@ -66,7 +66,7 @@ window.requestAnimationFrame(updateCustomElements)
  * Component finalization
  *
  * @function
- * @name ComponentBehaviour#finalize
+ * @name ComponentBehaviourInterface#finalize
  * @abstract
  * @returns {undefined}
  */
@@ -74,7 +74,10 @@ window.requestAnimationFrame(updateCustomElements)
 /**
  * Define a HTMLElement derivative class with custom behaviour.
  *
- * @param {{new(): HTMLElement, prototype: HTMLElement}} ElementClass
+ * @param {{
+ *  new(): HTMLElement,
+ *  prototype: HTMLElement
+ * }} ElementClass - HTMLElement, or derivative, class that will be extended by our ComponentBehaviour
  * @returns {{
  *  readonly templateName: string,
  *  readonly observedAttributes: string[],
@@ -82,12 +85,12 @@ window.requestAnimationFrame(updateCustomElements)
  *  readonly attributesDefault: Object.<string, string>,
  *  new(): ComponentBehaviour,
  *  prototype: ComponentBehaviour
- * }}
+ * }} HTMLElement, or derivative, class augmented with our ComponentBehaviour logic
  */
 export default ElementClass => {
   /**
-   * @extends HTMLElement
-   * @implements ComponentBehaviour
+   * @augments {HTMLElement}
+   * @implements {ComponentBehaviourInterface}
    */
   return class ComponentBehaviour extends ElementClass {
     // Constructor can't be used reliably in polyfill'ed custom elements
@@ -115,7 +118,7 @@ export default ElementClass => {
      * Modifier functions to be applied for validation and conversion of attribute values.
      * NOTICE: The functions must raise an error if the attribute value is invalid
      *
-     * @type: {Object.<string, attributeModifierCallback>}
+     * @type {object.<string, attributeModifierCallback>}
      */
     static get attributesModifier () {
       // List of modifier functions for attributes values
@@ -126,7 +129,7 @@ export default ElementClass => {
      * Default values for attributes.
      * NOTICE: Will be applied at element connection to any attribute without a prior value
      *
-     * @type: {Object.<string, string>}
+     * @type {object.<string, string>}
      */
     static get attributesDefault () {
       return {}
@@ -158,7 +161,7 @@ export default ElementClass => {
                     get: () => {
                       const rawValue = super.dataset[dataAttrName]
                       const modifier = this.constructor.attributesModifier[attrName]
-                      // TODO: Cache modifier result
+                      // @todo: Cache modifier result
                       return modifier == null ? rawValue : modifier(rawValue)
                     },
                     enumerable: true,
@@ -175,6 +178,7 @@ export default ElementClass => {
 
     /**
      * Component initialization
+     *
      * @abstract
      * @returns {undefined}
      */
@@ -182,7 +186,8 @@ export default ElementClass => {
 
     /**
      * Component reset
-     * @param {DocumentFragment|null} documentFragment
+     *
+     * @param {DocumentFragment|null} documentFragment - Populated DocumentFragment to replace the component's current state
      * @returns {undefined}
      */
     reset (documentFragment) {
@@ -199,14 +204,16 @@ export default ElementClass => {
 
     /**
      * Component rendering
+     *
      * @abstract
-     * @param {DocumentFragment} documentFragment
-     * @returns {boolean|undefined}
+     * @param {DocumentFragment} documentFragment - Empty DocumentFragment to be populate
+     * @returns {boolean|undefined} - Whether we should update the component's current state with the DocumentFragment
      */
     render (documentFragment) {}
 
     /**
      * Component finalization
+     *
      * @abstract
      * @returns {undefined}
      */
