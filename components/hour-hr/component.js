@@ -2,7 +2,7 @@ import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
 import register from '../helpers/register.js'
 import { validHour } from '../helpers/validators.js'
 
-class DateHR extends componentBehaviourMixin(window.HTMLElement) {
+class DateHR extends componentBehaviourMixin(HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
 
   static get templateName () {

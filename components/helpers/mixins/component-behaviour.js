@@ -12,11 +12,11 @@ const updateCustomElements = _ => {
     repaintQueue.clear()
   }
 
-  window.requestAnimationFrame(updateCustomElements)
+  requestAnimationFrame(updateCustomElements)
 }
 
 // Start loop for updating custom elements
-window.requestAnimationFrame(updateCustomElements)
+requestAnimationFrame(updateCustomElements)
 
 /**
  * Callback for attribute modifiers.
@@ -221,7 +221,7 @@ export default ElementClass => {
 
     connectedCallback () {
       // ShadyCSS need to be called for every custom element when it is connected
-      window.ShadyCSS && window.ShadyCSS.styleElement(this)
+      window.ShadyCSS && ShadyCSS.styleElement(this)
       if (!this.shadowRoot && this.isConnected) {
         // Attach shadow DOM to element
         this.attachShadow({ mode: 'open' })
@@ -260,18 +260,13 @@ export default ElementClass => {
 
       // Initialize fragment with fresh content from element's template
       fragment.appendChild(
-        document.importNode(
-          window.WebComponents.templates[this.constructor.templateName].content,
-          true
-        )
+        document.importNode(WebComponents.templates[this.constructor.templateName].content, true)
       )
 
       try {
         shouldUpdate = this.render(fragment)
       } catch (error) {
-        this.dispatchEvent(
-          new window.ErrorEvent('error', { message: 'Failed to render element', error })
-        )
+        this.dispatchEvent(new ErrorEvent('error', { message: 'Failed to render element', error }))
         if (rollback.has(attrName)) {
           // We couldn't revert the element back to it's old state.
           // As a result the element's internal data will probably be discrepant with it's visual representation

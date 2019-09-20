@@ -21,10 +21,10 @@ export default impl => {
   // Element initialization
   const init = () => {
     // ShadyCSS must be initialized before with the template and custom element
-    window.ShadyCSS && window.ShadyCSS.prepareTemplate(template, name, _extends.extends)
+    window.ShadyCSS && ShadyCSS.prepareTemplate(template, name, _extends.extends)
 
     // Register custom element
-    window.customElements.define(name, impl, _extends)
+    customElements.define(name, impl, _extends)
   }
 
   // Add init to correct listener

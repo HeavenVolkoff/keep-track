@@ -24,18 +24,24 @@
     <!-- Create custom components's template global registry -->
     <script>
       window.WebComponents = window.WebComponents || {}
-      window.WebComponents.templates = {}
+      WebComponents.templates = {}
     </script>
     <!-- Poor-man old browser detection.
         Works for: IE < 11, FF < 43, Chrome < 49, Opera < 36, Safari < 10, Android Webview <= KitKat
     -->
     <!-- prettier-ignore -->
-    <script>try{let _}catch(_){document.body.innerHTML="<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>";setTimeout(function(){window.location.href="https://browsehappy.com/"},1E4)}</script>
+    <script>
+      // eslint-disable-next-line
+      try{let _}catch(_){document.body.innerHTML="<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>";setTimeout(function(){window.location.href="https://browsehappy.com/"},1E4)}
+    </script>
     <!-- Safari 10.1/iOS Safari 10.3 nomodule polyfill
         from: https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
     -->
     <!-- prettier-ignore -->
-    <script>(function(){const a=document.createElement("script");if(!("noModule"in a)&&"onbeforeload"in a){let c=!1;document.addEventListener("beforeload",function(b){if(b.target===a)c=!0;else if(!b.target.hasAttribute("nomodule")||!c)return;b.preventDefault()},!0);a.type="module";a.src=".";document.head.appendChild(a);a.remove()}})()</script>
+    <script>
+      // eslint-disable-next-line
+      (function(){const a=document.createElement("script");if(!("noModule"in a)&&"onbeforeload"in a){let c=!1;document.addEventListener("beforeload",function(b){if(b.target===a)c=!0;else if(!b.target.hasAttribute("nomodule")||!c)return;b.preventDefault()},!0);a.type="module";a.src=".";document.head.appendChild(a);a.remove()}})()
+    </script>
     <!-- HTML Imports polyfill.
         Currently this feature is on deprecation route. However so long as HTML
         Modules aren't standardized and widely available this seems to be the best
