@@ -43,7 +43,17 @@ class HoursTimeline extends window.HTMLElement {
   }
 
   render () {
-    // TODO: make changes in DOM here
+    const hourRange = this.hourEnd - this.hourBegin
+    if (hourRange > 0) {
+      const range = document.createRange()
+      range.selectNodeContents(this.shadowRoot.querySelector('.timeline'))
+      const timelineFragment = document.createDocumentFragment()
+      for (const i of Array(hourRange).keys()) {
+        timelineFragment.appendChild(document.createElement('hr'))
+      }
+      range.deleteContents()
+      range.insertNode(timelineFragment)
+    }
   }
 
   connectedCallback () {
