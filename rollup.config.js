@@ -9,6 +9,16 @@ const toCopyExt = ['.css', '.js', '.map']
 const isProduction = process.env.NODE_ENV === 'production'
 const libsToProcess = ['node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js']
 
+const convertDirToGlob = async dir => {
+  try {
+    if (!(await fs.lstat(dir)).isDirectory()) return dir
+  } catch {
+    return dir
+  }
+
+  return join(dir, '**', '*')
+}
+
 const readPackageJson = dir =>
   fs.readFile(join(dir, 'package.json'), { encoding: 'utf8' }).then(JSON.parse)
 
@@ -17,10 +27,10 @@ const resolveDependencyFiles = async dependency => {
   return (await Promise.all(
     [packageJson.main || '', packageJson.browser || '', ...(packageJson.files || [])]
       .map(filePath => join(dependency, filePath))
-      .map(filePath => glob(filePath))
+      .map(filePath => convertDirToGlob(filePath).then(glob))
   ))
     .flatMap(f => f)
-    .filter(filePath => toCopyExt.includes(extname(filePath)))
+    .filter(filePath => toCopyExt.includes(extname(filePath)) && !libsToProcess.includes(filePath))
 }
 
 const resolveNodeModulesFiles = async () => {

@@ -157,7 +157,9 @@ export default ElementClass => {
                 return [
                   dataAttrName,
                   {
-                    set: val => (super.dataset[dataAttrName] = val),
+                    // ShadyDOM doesn't register attributes set through dataset.
+                    // So we redirect this to setAttribute
+                    set: val => this.setAttribute(attrName, val),
                     get: () => {
                       const rawValue = super.dataset[dataAttrName]
                       const modifier = this.constructor.attributesModifier[attrName]
@@ -193,12 +195,11 @@ export default ElementClass => {
     reset (documentFragment) {
       if (!this.shadowRoot) return
 
-      const range = document.createRange()
-      range.selectNodeContents(this.shadowRoot)
-      range.deleteContents()
+      window.ShadyDOM && window.ShadyDOM.patch(this)
+      this.shadowRoot.innerHTML = ''
 
       if (documentFragment != null) {
-        range.insertNode(documentFragment)
+        this.shadowRoot.appendChild(documentFragment)
       }
     }
 
