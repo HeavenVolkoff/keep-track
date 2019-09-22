@@ -34,6 +34,7 @@
     "semi": false,
     "endOfLine": "lf",
     "printWidth": 99,
-    "trailingComma": "all"
+    "singleQuote": true,
+    "trailingComma": "none"
   }
 }

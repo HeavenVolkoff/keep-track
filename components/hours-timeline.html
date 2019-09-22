@@ -1,47 +1,48 @@
 <template>
   <style>
     :host {
+      width: 10px;
+      height: 10px;
       display: flex;
       contain: content;
+      background: red;
     }
   </style>
   <div></div>
 </template>
 
 <script>
-  ;(() => {
-    "use strict"
+  'use strict'
 
-    // Save reference to element's template
-    const template = document.currentScript.previousElementSibling
+  class HoursTimeline extends HTMLElement {
+    // Constructor can't be used reliably in polyfill'ed custom elements
 
-    // Element initialization
-    const init = () => {
-      window.ShadyCSS && ShadyCSS.prepareTemplate(template, "hours-timeline")
+    connectedCallback() {
+      // ShadyCSS need to be called for every custom element when it is connected
+      window.ShadyCSS && ShadyCSS.styleElement(this)
 
-      class HoursTimeline extends HTMLElement {
-        // Constructor can't be used reliable in polyfill'ed custom elements
-        connectedCallback() {
-          window.ShadyCSS && ShadyCSS.styleElement(this)
-          if (!this.shadowRoot) {
-            this.attachShadow({ mode: "open" })
-            this.shadowRoot.appendChild(document.importNode(template.content, true))
-          }
-        }
-
-        disconnectedCallback() {
-          // TODO: Element clean-up
-        }
-
-        attributeChangedCallback(attrName, oldVal, newVal) {}
+      if (!this.shadowRoot) {
+        this.attachShadow({ mode: 'open' })
+        this.shadowRoot.appendChild(document.importNode(HoursTimeline.template.content, true))
       }
-
-      // Register custom element
-      customElements.define("hours-timeline", HoursTimeline)
     }
 
-    // Add init to correct listener
-    ;(window.WebComponents && WebComponents.waitFor && (WebComponents.waitFor(init) || true)) ||
-      document.addEventListener("WebComponentsReady", init)
-  })()
+    disconnectedCallback() {
+      // TODO: Element clean-up
+    }
+
+    attributeChangedCallback(attrName, oldVal, newVal) {}
+  }
+
+  // Save reference to element's template
+  HoursTimeline.template = document.currentScript.previousElementSibling
+  // Save reference to element class in global registry
+  window.WebComponents.registry['hours-timeline'] = HoursTimeline
 </script>
+
+<script
+  src="helpers/register.js"
+  type="text/javascript"
+  async
+  data-element-name="hours-timeline"
+></script>
