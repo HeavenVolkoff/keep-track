@@ -46,9 +46,14 @@
 </template>
 
 <script>
-  WebComponents.templates['workday-timeline'] =
-    document.currentScript.previousElementSibling
+  WebComponents.templates['workday-timeline'] = document.currentScript.previousElementSibling
 </script>
 
-<script type="module" async src="component.js"></script>
-<script type="systemjs-module" src="component-system.js"></script>
+<script async src="component.js" type="module"></script>
+
+<script
+  defer
+  nomodule
+  src="../systemjs-component-loader.js"
+  type="application/javascript"
+></script>

@@ -4,7 +4,7 @@ import { dirname, extname, join, parse, relative } from 'path'
 import glob from 'fast-glob'
 import copy from 'rollup-plugin-copy'
 
-const toCopy = ['index.html', 'LICENSE']
+const toCopy = ['index.html', 'LICENSE', 'components/systemjs-component-loader.js']
 const toCopyExt = ['.css', '.js', '.map']
 const isProduction = process.env.NODE_ENV === 'production'
 const libsToProcess = ['node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js']
@@ -49,8 +49,7 @@ export default (async () => {
     toCopyNodeModules,
     { terser }
   ] = await Promise.all([
-    glob('components/*/component.js'),
-    glob('components/*/component.html'),
+    glob('components/*/component.*'),
     resolveNodeModulesFiles(),
     (isProduction && import('rollup-plugin-terser')) || { terser: () => false }
   ])
