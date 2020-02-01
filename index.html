@@ -19,10 +19,10 @@
     <script>
       'use strict'
       try {
-        // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars, prefer-const
         let _ = class {}
       } catch (_) {
-        // Must be ES3 compatible
+        // Must be ES3/IE8 compatible
         document.body.innerHTML =
           '<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>'
         setTimeout(function() {
@@ -34,28 +34,24 @@
         Concept from: https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
     -->
     <script>
-      ;(function(script, suportESModule) {
+      ;((script, suportESModule) => {
         if ('noModule' in script || !('onbeforeload' in script)) return
 
         // Test whether current browser supports ESModules
         script.src = '.'
         script.type = 'module'
-        script.onbeforeload = function() {
+        script.onbeforeload = () => {
           suportESModule = true
           event.preventDefault()
         }
-
         document.head.appendChild(script)
-
         script.remove()
 
         if (suportESModule) {
           // Current browser support ESModule but not the noModule attribute
           document.addEventListener(
             'beforeload',
-            function(event) {
-              if (event.target.hasAttribute('nomodule')) event.preventDefault()
-            },
+            event => event.target.hasAttribute('nomodule') && event.preventDefault(),
             true
           )
         }
