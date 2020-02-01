@@ -20,29 +20,27 @@
   "author": "HeavenVolkoff",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@webcomponents/html-imports": "^1",
     "@webcomponents/webcomponentsjs": "^2",
     "pepjs": "^0.5.2",
-    "sanitize.css": "^11",
-    "systemjs": "^6.1.2"
+    "sanitize.css": "^11"
   },
   "devDependencies": {
-    "eslint": "^6.4.0",
+    "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-html": "^6.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jsdoc": "^15.9.2",
-    "eslint-plugin-markdown": "^1.0.0",
-    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jsdoc": "^21.0.0",
+    "eslint-plugin-markdown": "^1.0.1",
+    "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "fast-glob": "^3.0.4",
-    "js-isort": "^2.0.4",
+    "fast-glob": "^3.1.1",
+    "js-isort": "^3.1.0",
     "license-checker": "^25.0.1",
-    "prettier": "^1.18.2",
-    "rollup": "^1.21.4",
-    "rollup-plugin-copy": "^3.1.0",
-    "rollup-plugin-terser": "^5.1.2"
+    "prettier": "^1.19.1",
+    "rollup": "^1.31.0",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-terser": "^5.2.0"
   },
   "eslintConfig": {
     "env": {

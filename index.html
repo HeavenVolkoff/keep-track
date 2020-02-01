@@ -1,110 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Specify document character encoding -->
     <meta charset="utf-8" />
-
-    <!-- Specify IE rendering engine -->
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-
-    <title>Keep Track</title>
-
+    <!-- Color the status bar on mobile devices -->
+    <meta content="#ffffff" name="theme-color" />
     <!-- Allow web page to correctly scale in multi-dpi devices -->
     <meta content="width=device-width, initial-scale=1" name="viewport" />
-
     <!-- Website description -->
     <meta content="Keep track of your clock-in and clock-outs from work" name="description" />
 
-    <!-- Color the status bar on mobile devices -->
-    <meta content="#ffffff" name="theme-color" />
-
-    <!-- Disable tap highlight on IE -->
-    <meta content="no" name="msapplication-tap-highlight" />
+    <title>Keep Track</title>
 
     <!-- Scripts -->
-    <!-- Create custom components's template global registry -->
-    <script>
-      window.WebComponents = window.WebComponents || {}
-      WebComponents.templates = {}
-    </script>
     <!-- Poor-man old browser detection.
-        Works for: IE < 11, FF < 43, Chrome < 49, Opera < 36, Safari < 10, Android Webview <= KitKat
+        Tigger for: any IE, FF < 45, Chrome < 42, Safari < 10, Opera < 29, IOS < 10, Android Webview <= KitKat
     -->
     <script>
+      'use strict'
       try {
         // eslint-disable-next-line no-unused-vars
-        let _
+        let _ = class {}
       } catch (_) {
+        // Must be ES3 compatible
         document.body.innerHTML =
           '<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>'
-        setTimeout(function () {
+        setTimeout(function() {
           window.location.href = 'https://browsehappy.com/'
-        }, 1e4)
+        }, 10000)
       }
     </script>
     <!-- Safari 10.1/iOS Safari 10.3 nomodule polyfill
-        from: https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
+        Concept from: https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
     -->
     <script>
-      (function () {
-        const a = document.createElement('script')
-        if (!('noModule' in a) && 'onbeforeload' in a) {
-          let c = !1
+      ;(function(script, suportESModule) {
+        if ('noModule' in script || !('onbeforeload' in script)) return
+
+        // Test whether current browser supports ESModules
+        script.src = '.'
+        script.type = 'module'
+        script.onbeforeload = function() {
+          suportESModule = true
+          event.preventDefault()
+        }
+
+        document.head.appendChild(script)
+
+        script.remove()
+
+        if (suportESModule) {
+          // Current browser support ESModule but not the noModule attribute
           document.addEventListener(
             'beforeload',
-            function (b) {
-              if (b.target === a) c = !0
-              else if (!b.target.hasAttribute('nomodule') || !c) return
-              b.preventDefault()
+            function(event) {
+              if (event.target.hasAttribute('nomodule')) event.preventDefault()
             },
-            !0
+            true
           )
-          a.type = 'module'
-          a.src = '.'
-          document.head.appendChild(a)
-          a.remove()
         }
-      })()
+      })(document.createElement('script'), false)
     </script>
-    <!-- WebComponents polyfill.
-        WebComponents spec is not yet widely available even in evergreen browsers
-        WARNING: Must use defer, not async
-    -->
+    <!-- Polyfill ES5+ for older browsers. -->
     <script
+      src="https://polyfill.io/v3/polyfill.min.js?flags=gated&callback=pollyfill&features=Object.fromEntries%2Ces2015%2Ces2016%2Ces2017%2Ces2018%2Ces5%2Ces6%2Ces7%2CURL"
+      type="application/javascript"
       defer
+    ></script>
+    <!-- WebComponents polyfill for older browsers. -->
+    <script
       src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"
       type="application/javascript"
-    ></script>
-    <!-- HTML Imports polyfill.
-        Currently this feature is on deprecation route. However so long as HTML
-        Modules aren't standardized and widely available this seems to be the best
-        way to load WebComponents.
-    -->
-    <script
       defer
-      src="node_modules/@webcomponents/html-imports/src/html-imports.js"
-      type="application/javascript"
     ></script>
-    <!-- SystemJS, ES module polyfill.
-        Only loaded in browsers that don't support ES modules thanks to nomodule.
-        WARNING: Must use defer, not async
-    -->
-    <script
-      defer
-      nomodule
-      src="node_modules/systemjs/dist/s.min.js"
-      type="application/javascript"
-    ></script>
-    <!-- Basic features polyfills.
-        Must be synchronous to ensure all future code have access to this features
-    -->
-    <script
-      src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=Object.fromEntries%2Ces2015%2Ces2016%2Ces2017%2Ces2018%2Ces5%2Ces6%2Ces7%2CURL"
-      type="application/javascript"
-    ></script>
-
-    <!-- WebComponents Imports -->
-    <link href="components/workday-timeline/component.html" rel="import" />
-    <link href="components/hour-hr/component.html" rel="import" />
+    <!-- Main logic -->
+    <script src="src/app.js" type="module"></script>
+    <script src="src/app-fallback.js" type="application/javascript" defer nomodule></script>
 
     <!-- Styles -->
     <!-- Sanitize CSS.
@@ -119,11 +90,6 @@
     <noscript>
       <meta content="10;URL='https://www.enable-javascript.com/'" http-equiv="refresh" />
       <p>This website requires javascript to work, you will be redirected in 10 seconds...</p>
-      <style>
-        main {
-          display: none !important;
-        }
-      </style>
     </noscript>
 
     <main>

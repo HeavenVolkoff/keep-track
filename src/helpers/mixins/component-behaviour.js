@@ -1,22 +1,10 @@
-import { attributeNameToCamelCase, hasOwnProperty } from '../misc.js'
+import { hasOwnProperty, camelCaseToSnakeCase, attributeNameToCamelCase } from '../misc.js'
 
-const repaintQueue = new Map()
 const datasetSymbol = Symbol("Custom element's dataset")
 const rollbackSymbol = Symbol("Custom element's attribute rollback control")
-const initializedAttrs = Symbol("Custom element's attributes default initialization flag")
-const updateCustomElements = _ => {
-  if (repaintQueue.size > 0) {
-    for (const [element, documentFragment] of repaintQueue) {
-      element.reset(documentFragment)
-    }
-    repaintQueue.clear()
-  }
-
-  requestAnimationFrame(updateCustomElements)
-}
-
-// Start loop for updating custom elements
-requestAnimationFrame(updateCustomElements)
+const initializedSymbol = Symbol("Custom element's initialization flag")
+const repaintJobIdSymbol = Symbol("Custom element's repaint job animation frame id")
+const resetTemplateSymbol = Symbol("Custom element's reset template reference")
 
 /**
  * Callback for attribute modifiers.
@@ -63,15 +51,6 @@ requestAnimationFrame(updateCustomElements)
  **/
 
 /**
- * Component finalization
- *
- * @function
- * @name ComponentBehaviourInterface#finalize
- * @abstract
- * @returns {undefined}
- */
-
-/**
  * Define a HTMLElement derivative class with custom behaviour.
  *
  * @param {{
@@ -79,7 +58,8 @@ requestAnimationFrame(updateCustomElements)
  *  prototype: HTMLElement
  * }} ElementClass - HTMLElement, or derivative, class that will be extended by our ComponentBehaviour
  * @returns {{
- *  readonly templateName: string,
+ *  readonly style: string,
+ *  readonly template: string,
  *  readonly observedAttributes: string[],
  *  readonly attributesModifier: Object.<string, attributeModifierCallback>,
  *  readonly attributesDefault: Object.<string, string>,
@@ -96,13 +76,21 @@ export default ElementClass => {
     // Constructor can't be used reliably in polyfill'ed custom elements
 
     /**
-     * The component global identifier, a.k.a: Tag name.
-     * Used for loading the template data into the Shadow DOM.
+     * Component CSS style.
      *
      * @type {string}
      */
-    static get templateName () {
-      throw Error('No template name available for this component')
+    static get style() {
+      return ''
+    }
+
+    /**
+     * Component HTML template.
+     *
+     * @type {string}
+     */
+    static get template() {
+      throw Error('No template available for this component')
     }
 
     /**
@@ -110,7 +98,7 @@ export default ElementClass => {
      *
      * @type {string[]}
      */
-    static get observedAttributes () {
+    static get observedAttributes() {
       return []
     }
 
@@ -120,7 +108,7 @@ export default ElementClass => {
      *
      * @type {object.<string, attributeModifierCallback>}
      */
-    static get attributesModifier () {
+    static get attributesModifier() {
       // List of modifier functions for attributes values
       return {}
     }
@@ -131,7 +119,7 @@ export default ElementClass => {
      *
      * @type {object.<string, string>}
      */
-    static get attributesDefault () {
+    static get attributesDefault() {
       return {}
     }
 
@@ -142,8 +130,8 @@ export default ElementClass => {
      *  Extra attributes will not be exposed here, but can be accessed in they raw form with
      *    `super.dataset`.
      */
-    get dataset () {
-      // Instantiate dataset if it isn't available yet
+    get dataset() {
+      // Initialize dataset if it isn't available yet
       if (this[datasetSymbol] == null) {
         this[datasetSymbol] = Object.create(
           null,
@@ -163,7 +151,7 @@ export default ElementClass => {
                     get: () => {
                       const rawValue = super.dataset[dataAttrName]
                       const modifier = this.constructor.attributesModifier[attrName]
-                      // @todo: Cache modifier result
+                      // @todo: Cache modifier result?
                       return modifier == null ? rawValue : modifier(rawValue)
                     },
                     enumerable: true,
@@ -184,22 +172,31 @@ export default ElementClass => {
      * @abstract
      * @returns {undefined}
      */
-    init () {}
+    init() {}
 
     /**
      * Component reset
      *
-     * @param {DocumentFragment|null} documentFragment - Populated DocumentFragment to replace the component's current state
+     * @param {HTMLTemplateElement|null} documentFragment - Populated DocumentFragment to replace the component's current state
      * @returns {undefined}
      */
-    reset (documentFragment) {
+    reset(template) {
+      // Don't have a shadow DOM, nothing to do
       if (!this.shadowRoot) return
 
+      // Patch possible polyfill edge cases
       window.ShadyDOM && window.ShadyDOM.patch(this)
+
+      // Reset element content
       this.shadowRoot.innerHTML = ''
 
-      if (documentFragment != null) {
-        this.shadowRoot.appendChild(documentFragment)
+      if (template != null) {
+        // Polyfill template shadow DOM css
+        window.ShadyCSS &&
+          window.ShadyCSS.prepareTemplate(template, camelCaseToSnakeCase(this.constructor.name))
+
+        // Render new content
+        this.shadowRoot.appendChild(document.importNode(template.content, true))
       }
     }
 
@@ -207,83 +204,113 @@ export default ElementClass => {
      * Component rendering
      *
      * @abstract
-     * @param {DocumentFragment} documentFragment - Empty DocumentFragment to be populate
+     * @param {DocumentFragment} documentFragment - DocumentFragment to be populate
      * @returns {boolean|undefined} - Whether we should update the component's current state with the DocumentFragment
      */
-    render (documentFragment) {}
+    render(documentFragment) {}
 
-    /**
-     * Component finalization
-     *
-     * @abstract
-     * @returns {undefined}
-     */
-    finalize () {}
-
-    connectedCallback () {
+    connectedCallback() {
       // ShadyCSS need to be called for every custom element when it is connected
-      window.ShadyCSS && ShadyCSS.styleElement(this)
+      window.ShadyCSS && window.ShadyCSS.styleElement(this)
       if (!this.shadowRoot && this.isConnected) {
         // Attach shadow DOM to element
         this.attachShadow({ mode: 'open' })
 
         this.init()
 
-        this[initializedAttrs] = () =>
-          Object.keys(this.constructor.attributesDefault).every(attr =>
-            hasOwnProperty(this.attributes, attr)
-          )
+        // Initialize components default attribute values
         for (const [key, value] of Object.entries(this.constructor.attributesDefault)) {
           if (this.getAttribute(key) === null) this.setAttribute(key, value)
         }
-        this[initializedAttrs] = () => true
       }
+
+      // Inform that the element is fully initiallized
+      this[initializedSymbol] = true
+
+      // Emulate attribute change to trigger initial rendering
+      this.attributeChangedCallback(null, false, true)
+
+      // Initialize repaint job
+      const repaintJob = () => {
+        const resetTemplate = this[resetTemplateSymbol]
+        if (resetTemplate != null) {
+          delete this[resetTemplateSymbol]
+          this.reset(resetTemplate)
+        }
+        this[repaintJobIdSymbol] = window.requestAnimationFrame(repaintJob)
+      }
+      this[repaintJobIdSymbol] = window.requestAnimationFrame(repaintJob)
     }
 
-    disconnectedCallback () {
+    disconnectedCallback() {
+      // Cancel repaint job
+      window.cancelAnimationFrame(this[repaintJobIdSymbol])
+
+      // Un-initialize
+      delete this[initializedSymbol]
+
+      // Clear element
       this.reset(null)
-      this.attachShadow({ mode: 'closed' })
-      this[initializedAttrs] = () => false
-      this.finalize()
     }
 
-    attributeChangedCallback (attrName, oldVal, newVal) {
+    attributeChangedCallback(attrName, oldVal, newVal) {
       // Don't process repeated values
       if (oldVal === newVal) return
       // Wait until element has initialized all attributes
-      if (!this[initializedAttrs]()) return
-      // Initialize rollback control if necessary
-      if (!(this[rollbackSymbol] instanceof Set)) this[rollbackSymbol] = new Set()
+      if (!(initializedSymbol in this)) return
 
+      // Initialize new template with fresh content from component's HTML template
+      const template = document.createElement('template')
+      template.innerHTML = this.constructor.template.trim()
+
+      // Collapse any template embedded style into a single style combined with the component's style
+      const style = document.createElement('style')
+      style.textContent = (
+        Array.from(template.content.querySelectorAll('style'))
+          .map(style => template.content.removeChild(style).innerText)
+          .join('\n') +
+        '\n' +
+        this.constructor.style
+      ).trim()
+      template.content.prepend(style)
+
+      // Attempt to execute component render method
       let shouldUpdate = true
-      const rollback = this[rollbackSymbol]
-      const fragment = document.createDocumentFragment()
-
-      // Initialize fragment with fresh content from element's template
-      fragment.appendChild(
-        document.importNode(WebComponents.templates[this.constructor.templateName].content, true)
-      )
-
       try {
-        shouldUpdate = this.render(fragment)
+        shouldUpdate = this.render(template.content)
       } catch (error) {
-        this.dispatchEvent(new ErrorEvent('error', { message: 'Failed to render element', error }))
-        if (rollback.has(attrName)) {
-          // We couldn't revert the element back to it's old state.
-          // As a result the element's internal data will probably be discrepant with it's visual representation
+        // Component couldn't do initial redering
+        if (attrName == null) throw Error('Failed to do initial element rendering')
+
+        // Component failed to render, dispatch an error event
+        this.dispatchEvent(
+          new ErrorEvent('error', {
+            error,
+            message: `Failed to render element on attribute <${attrName}> change`
+          })
+        )
+        // Attempt to rollback the attribute change that cause the render to fail
+        if (rollbackSymbol in this) {
+          // We failed rolling back a previous change.
+          // As such it is not possible to revert the element back to it's old state.
+          // As a result the element's internal state will probably be discrepant with it's visual representation
           throw Error('Failed to restore old state of custom element')
         } else {
-          rollback.add(attrName)
-          // This change is synchronous and results in a recursive call to `attributeChangedCallback`
+          // Set element rollback shared state
+          this[rollbackSymbol] = true
+          // According to spec this change is synchronous and results in a recursive call to `attributeChangedCallback`
           this.setAttribute(attrName, oldVal)
+          // On polyfill the above operation isn't synchronous, so we flush to wait
+          window.ShadyDOM && window.ShadyDOM.flush()
           return
         }
       } finally {
-        rollback.delete(attrName)
+        // Clear rollback state (Yes, this is executed regardless of the return above)
+        delete this[rollbackSymbol]
       }
 
-      // Add rendered fragment to repaint queue
-      if (typeof shouldUpdate === 'undefined' || shouldUpdate) repaintQueue.set(this, fragment)
+      // Register template to be repainted
+      if (typeof shouldUpdate === 'undefined' || shouldUpdate) this[resetTemplateSymbol] = template
     }
   }
 }

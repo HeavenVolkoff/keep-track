@@ -1,13 +1,26 @@
 import { promises as fs } from 'fs'
-import { dirname, extname, join, parse, relative } from 'path'
+import { dirname, extname, join } from 'path'
 
 import glob from 'fast-glob'
 import copy from 'rollup-plugin-copy'
 
-const toCopy = ['index.html', 'LICENSE', 'components/systemjs-component-loader.js']
-const toCopyExt = ['.css', '.js', '.map']
+/**
+ * Files that will be copied to build
+ */
+const toCopy = ['index.html', 'LICENSE']
+
+/**
+ * Libs that should be minified before copy
+ */
+const libsToMinify = ['node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js']
+
+/**
+ * File extensions allowed to be copied from node_modules
+ */
+const allowedExtensions = ['.css', '.js', '.map']
+
+// Define what kind of build to produce
 const isProduction = process.env.NODE_ENV === 'production'
-const libsToProcess = ['node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js']
 
 const convertDirToGlob = async dir => {
   try {
@@ -24,13 +37,17 @@ const readPackageJson = dir =>
 
 const resolveDependencyFiles = async dependency => {
   const packageJson = await readPackageJson(dependency)
-  return (await Promise.all(
-    [packageJson.main || '', packageJson.browser || '', ...(packageJson.files || [])]
-      .map(filePath => join(dependency, filePath))
-      .map(filePath => convertDirToGlob(filePath).then(glob))
-  ))
+  return (
+    await Promise.all(
+      [packageJson.main || '', packageJson.browser || '', ...(packageJson.files || [])]
+        .map(filePath => join(dependency, filePath))
+        .map(filePath => convertDirToGlob(filePath).then(glob))
+    )
+  )
     .flatMap(f => f)
-    .filter(filePath => toCopyExt.includes(extname(filePath)) && !libsToProcess.includes(filePath))
+    .filter(
+      filePath => allowedExtensions.includes(extname(filePath)) && !libsToMinify.includes(filePath)
+    )
 }
 
 const resolveNodeModulesFiles = async () => {
@@ -43,28 +60,18 @@ const resolveNodeModulesFiles = async () => {
 }
 
 export default (async () => {
-  const [
-    componentsJSPaths,
-    componentsHTMLPaths,
-    toCopyNodeModules,
-    { terser }
-  ] = await Promise.all([
-    glob('components/*/component.*'),
+  const [toCopyNodeModules, { terser }] = await Promise.all([
     resolveNodeModulesFiles(),
     (isProduction && import('rollup-plugin-terser')) || { terser: () => false }
   ])
 
   return [
     {
-      input: componentsJSPaths.reduce((obj, filePath) => {
-        const path = parse(filePath)
-        obj[relative('components', join(path.dir, path.name))] = filePath
-        return obj
-      }, {}),
+      input: 'src/app.js',
       output: [
         // ES module version, for modern browsers
         {
-          dir: 'dist/components',
+          dir: 'dist/src',
           format: 'es',
           indent: false,
           sourcemap: true,
@@ -72,16 +79,16 @@ export default (async () => {
         },
         // SystemJS version, for older browsers
         {
-          dir: 'dist/components',
+          dir: 'dist/src',
           indent: false,
-          format: 'system',
+          format: 'iife',
           sourcemap: true,
-          entryFileNames: '[name]-system.js'
+          entryFileNames: '[name]-fallback.js'
         }
       ],
       plugins: [
         copy({
-          targets: [...toCopy, ...componentsHTMLPaths, ...toCopyNodeModules].map(path => ({
+          targets: [...toCopy, ...toCopyNodeModules].map(path => ({
             src: path,
             dest: dirname(join('dist', path))
           })),
@@ -95,7 +102,7 @@ export default (async () => {
       treeshake: true,
       experimentalOptimizeChunks: true
     },
-    ...libsToProcess.map(filePath => ({
+    ...libsToMinify.map(filePath => ({
       input: filePath,
       output: [
         {
@@ -105,7 +112,7 @@ export default (async () => {
           sourcemap: true
         }
       ],
-      plugins: [terser({ ecma: 8 })],
+      plugins: [terser({ ecma: 5 })],
       treeshake: false
     }))
   ]
