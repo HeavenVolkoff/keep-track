@@ -73,15 +73,29 @@ export default (async () => {
         {
           dir: 'dist/src',
           format: 'es',
-          indent: false,
+          indent: !isProduction,
+          plugins: [
+            terser({
+              module: true,
+              warnings: true,
+              toplevel: true,
+              keep_fnames: true,
+              keep_classnames: true
+            })
+          ],
+          safari10: true,
           sourcemap: true,
           preferConst: true
         },
         // SystemJS version, for older browsers
         {
           dir: 'dist/src',
-          indent: false,
+          indent: !isProduction,
           format: 'iife',
+          plugins: [
+            terser({ warnings: true, toplevel: true, keep_fnames: true, keep_classnames: true })
+          ],
+          safari10: true,
           sourcemap: true,
           entryFileNames: '[name]-fallback.js'
         }
@@ -93,10 +107,6 @@ export default (async () => {
             dest: dirname(join('dist', path))
           })),
           copyOnce: true
-        }),
-        terser({
-          ecma: 8,
-          compress: { module: true }
         })
       ],
       treeshake: true,
@@ -112,7 +122,7 @@ export default (async () => {
           sourcemap: true
         }
       ],
-      plugins: [terser({ ecma: 5 })],
+      plugins: [terser()],
       treeshake: false
     }))
   ]
