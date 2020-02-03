@@ -1,22 +1,23 @@
 import { validHour } from '../helpers/validators.js'
-import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
+import componentBehaviourMixin from '../mixins/component-behaviour.js'
 
 export default class WorkdayTimeline extends componentBehaviourMixin(HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
 
   static get style() {
-    return `
+    return /* css */ `
     :host {
+      color: var(--color);
       display: flex;
       contain: content;
       min-width: 4rem;
       min-height: 6rem;
-      background: dimgrey;
+      background: var(--background);
       align-content: center;
       justify-content: center;
     }
     
-    .date {
+    :host > .date {
       padding: 1rem;
       display: flex;
       align-content: center;
@@ -24,20 +25,17 @@ export default class WorkdayTimeline extends componentBehaviourMixin(HTMLElement
       justify-content: center;
     }
     
-    .timeline {
+    :host > .timeline {
       flex: auto;
       display: flex;
       align-content: center;
       flex-direction: row;
       justify-content: space-around;
     }
-    
-    .timeline > hr {
-      margin: 0;
-      height: 100%;
-      padding: 0;
-      border: none;
-      border-left: 2px dotted black;
+
+    :host > .timeline > hour-hr {
+      --color: var(--color);
+      --line-style: solid;
     }
     
     @media screen and (pointer: fine) {
@@ -49,7 +47,7 @@ export default class WorkdayTimeline extends componentBehaviourMixin(HTMLElement
   }
 
   static get template() {
-    return `
+    return /* html */ `
     <div class="date">??/??</div>
     <div class="timeline"></div>
     `

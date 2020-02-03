@@ -1,12 +1,13 @@
 import { validHour } from '../helpers/validators.js'
-import componentBehaviourMixin from '../helpers/mixins/component-behaviour.js'
+import componentBehaviourMixin from '../mixins/component-behaviour.js'
 
 export default class HourHR extends componentBehaviourMixin(HTMLElement) {
   // Constructor can't be used reliably in polyfill'ed custom elements
 
   static get style() {
-    return `
+    return /* css */ `
     :host:before {
+      color: var(--color);
       content: attr(data-hour);
       font-size: 0.75em;
     }
@@ -19,16 +20,18 @@ export default class HourHR extends componentBehaviourMixin(HTMLElement) {
 
     :host > hr {
       flex: auto;
-      width: 1px;
+      width: 0;
       margin: 0;
       border: none;
-      background: black;
+      border-left-width: 2px;
+      border-left-color: var(--color);
+      border-left-style: var(--line-style);
     }
     `
   }
 
   static get template() {
-    return `
+    return /* html */ `
     <hr />
     `
   }

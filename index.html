@@ -17,18 +17,20 @@
         Trigger for: any IE, FF < 45, Chrome < 42, Safari < 10, Opera < 29, IOS < 10, Android Webview <= KitKat
     -->
     <script>
-      'use strict'
-      try {
-        // eslint-disable-next-line no-unused-vars, prefer-const
-        let _ = class {}
-      } catch (_) {
-        // Must be ES3/IE8 compatible
-        document.body.innerHTML =
-          '<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>'
-        setTimeout(function() {
-          window.location.href = 'https://browsehappy.com/'
-        }, 10000)
-      }
+      ;(function() {
+        'use strict'
+        try {
+          // eslint-disable-next-line no-unused-vars, prefer-const
+          let _ = class {}
+        } catch (_) {
+          // Must be ES3/IE8 compatible
+          document.body.innerHTML =
+            '<p>Your browser is too old and not supported. You will be redirected in 10 seconds...</p>'
+          setTimeout(function() {
+            window.location.href = 'https://browsehappy.com/'
+          }, 10000)
+        }
+      })()
     </script>
     <!-- Safari 10.1/iOS Safari 10.3 nomodule polyfill
         Concept from: https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
@@ -80,6 +82,53 @@
     <link href="node_modules/sanitize.css/sanitize.css" rel="stylesheet" />
     <link href="node_modules/sanitize.css/forms.css" rel="stylesheet" />
     <link href="node_modules/sanitize.css/typography.css" rel="stylesheet" />
+    <!-- Main Style. -->
+    <style>
+      :root {
+        --color: #fff;
+        --accent: #ffaa00;
+        --background: #444;
+        --color-on-accent: #000;
+      }
+
+      body {
+        color: var(--color);
+        background-color: var(--background);
+      }
+
+      body > nav-bar {
+        --background: #333;
+      }
+
+      body > nav-bar a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      body > nav-bar a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      body > main {
+        margin: 1rem;
+        padding: 0.5rem;
+        background-color: #333;
+      }
+
+      body > main > header h1 {
+        text-align: center;
+      }
+
+      body > main > article {
+        border: thin solid #222;
+        padding: 1rem;
+      }
+
+      body > main workday-timeline {
+        --background: #333;
+      }
+    </style>
   </head>
   <body>
     <!-- Warn any user without javascript that they should enable it to use this web page -->
@@ -88,8 +137,22 @@
       <p>This website requires javascript to work, you will be redirected in 10 seconds...</p>
     </noscript>
 
+    <nav-bar>
+      <h2 slot="logo">Keep-Track</h2>
+      <li slot="item">About</li>
+      <li slot="item">Settings</li>
+      <li clickable slot="item"><a href="https://github.com/HeavenVolkoff/keep-track">Github</a></li>
+    </nav-bar>
+
     <main>
-      <workday-timeline></workday-timeline>
+      <header>
+        <h1>Timeline</h1>
+      </header>
+      <article>
+        <workday-timeline></workday-timeline>
+      </article>
     </main>
+
+    <footer></footer>
   </body>
 </html>

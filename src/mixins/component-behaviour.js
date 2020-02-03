@@ -1,4 +1,4 @@
-import { hasOwnProperty, camelCaseToSnakeCase, attributeNameToCamelCase } from '../misc.js'
+import { camelCaseToSnakeCase, attributeNameToCamelCase } from '../helpers/misc.js'
 
 const datasetSymbol = Symbol("Custom element's dataset")
 const rollbackSymbol = Symbol("Custom element's attribute rollback control")
@@ -177,7 +177,7 @@ export default ElementClass => {
     /**
      * Component reset
      *
-     * @param {HTMLTemplateElement|null} documentFragment - Populated DocumentFragment to replace the component's current state
+     * @param {HTMLTemplateElement|null} template - Populated DocumentFragment to replace the component's current state
      * @returns {undefined}
      */
     reset(template) {
@@ -191,7 +191,7 @@ export default ElementClass => {
       this.shadowRoot.innerHTML = ''
 
       if (template != null) {
-        // Polyfill template shadow DOM css
+        // Polyfill shadow DOM scoped css
         window.ShadyCSS &&
           window.ShadyCSS.prepareTemplate(template, camelCaseToSnakeCase(this.constructor.name))
 
