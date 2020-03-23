@@ -21,6 +21,7 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2",
+    "anticaptcha": "^2.0.3",
     "pepjs": "^0.5.2",
     "sanitize.css": "^11"
   },
@@ -29,7 +30,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-html": "^6.0.0",
-    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-jsdoc": "^21.0.0",
     "eslint-plugin-markdown": "^1.0.1",
     "eslint-plugin-node": "^11.0.0",

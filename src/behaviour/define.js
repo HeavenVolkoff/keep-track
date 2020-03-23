@@ -1,16 +1,13 @@
-import { camelCaseToSnakeCase } from './misc.js'
+import { camelCaseToSnakeCase } from './name-op.js'
 
 /**
  * Define custom elements, auto generating their names.
  *
- * @param {{
- *  new(): HTMLElement,
- *  prototype: HTMLElement
- * }[]} customElements - List of HTMLElement derivatives.
+ * @param {HTMLElement[]} customElementDefinitions - List of HTMLElement derivatives.
  */
 const _defineCustomElements = customElementDefinitions => {
   for (const customElementDefinition of customElementDefinitions) {
-    if (!HTMLElement.isPrototypeOf(customElementDefinition)) {
+    if (!Object.isPrototypeOf.call(HTMLElement, customElementDefinition)) {
       console.error(`Class ${customElementDefinition.name} is not a subclass of HTMLElement`)
       continue
     }
@@ -31,10 +28,7 @@ const _defineCustomElements = customElementDefinitions => {
 /**
  * Define custom elements, auto generating their names.
  *
- * @param {{
- *  new(): HTMLElement,
- *  prototype: HTMLElement
- * }[]} customElements - List of HTMLElement derivatives.
+ * @param {HTMLElement[]} customElements - List of HTMLElement derivatives.
  */
 export default (...customElements) => {
   // Custom element initialization wrapper
